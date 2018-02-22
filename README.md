@@ -61,6 +61,6 @@ pip3 install emoji --upgrade
 2. Run the script with
 ```
 python3 facebook_chat_statistics.py
-``
+```
 
 Enjoy!
