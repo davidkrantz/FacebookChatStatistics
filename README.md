@@ -38,14 +38,12 @@ It also plots using Matplotlib the following diagrams (see pictures below)
 2. Install [Facebook Chat Archive Parser](https://github.com/ownaginatious/fbchat-archive-parser) with
 ```
 pip3 install fbchat-archive-parser
-
-´´´
+```
 
 3. Using your terminal, locate to the downloaded Facebook data folder. With the Facebook Chat Archive Parser you can choose to only parse one specific conversation using the following command
 ```
 fbcap ./messages.htm -t FirstNameOrLastName -f json
-
-´´´ 
+``` 
 
 Click [here](https://github.com/ownaginatious/fbchat-archive-parser) for more information on how to use the Facebook Chat Archive Parser.
 
@@ -54,15 +52,15 @@ Click [here](https://github.com/ownaginatious/fbchat-archive-parser) for more in
 
 ```
 pip3 install matplotlib
-´´´
+```
 and Emoji can be installed by
 ```
 pip3 install emoji --upgrade
-´´´
+```
 
 2. Run the script with
 ```
 python3 facebook_chat_statistics.py
-```
+``
 
 Enjoy!
