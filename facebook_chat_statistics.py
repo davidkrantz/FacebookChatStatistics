@@ -78,7 +78,7 @@ print("Number of times " + partner + ": " + str(nbr_partner) + ' (' + str(procen
 
 # Fetch timeline data
 timeline = [None] * (nbr_days + 2)
-hour = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9 , 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
+hour = list(range(24))
 weekday_arr = [0, 1, 2, 3, 4, 5, 6]
 nbr_times_hour = [0] * 24
 nbr_times_weekday = [0] * 7
@@ -178,7 +178,7 @@ for i in range(0, len(data['threads'][0]['messages'])):
 		emoji_str = emoji.demojize(c)
 		if emoji_str == ':red_heart:':
 			if sender == you:
-				nbr_hearts_you = nbr_hearts_you = + 1
+				nbr_hearts_you = nbr_hearts_you + 1
 			else:
 				nbr_hearts_partner = nbr_hearts_partner + 1
 		if emoji_str in emojis_list:
