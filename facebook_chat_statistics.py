@@ -3,7 +3,6 @@ import matplotlib.dates as dt
 from matplotlib.dates import DateFormatter
 import numpy as np
 import json
-from pprint import pprint
 from datetime import datetime, timedelta
 import matplotlib.dates as mdates
 import emoji
