@@ -1,6 +1,6 @@
 # Facebook Chat Statistics
 
-A small program written in Python that lets you see statistics of any given Facebook Messenger conversation. I used this as a Valentines day surprise for my girlfriend, but can be modified and used for any other purpose. This project was inspired by [this](https://www.reddit.com/r/dataisbeautiful/comments/7xicua/my_girlfriend_made_a_visualization_of_all/) Reddit post.
+A small program written in Python that lets you see statistics of any given Facebook Messenger conversation. I used this as a Valentines day surprise for my girlfriend and it is therefore focused on only conversations between two persons, but can be modified and used for any other purpose. This project was inspired by [this](https://www.reddit.com/r/dataisbeautiful/comments/7xicua/my_girlfriend_made_a_visualization_of_all/) Reddit post.
 
 ## Features
 
@@ -31,6 +31,12 @@ It also plots using Matplotlib the following diagrams (see pictures below)
 <img src="pics/top_10_emojis.png">
 
 ## Running locally
+
+Firstly you will need to [download](https://github.com/davidkrantz/FacebookChatStatistics/archive/master.zip) or clone the repository, the latter can be done by typing
+```
+git clone https://github.com/davidkrantz/FacebookChatStatistics.git
+```
+in your terminal.
 
 ### Convert your conversation to a .json file
 1. Download your Facebook data by following [these](https://www.facebook.com/help/212802592074644?helpref=uf_permalink) instructions.
