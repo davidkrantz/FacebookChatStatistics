@@ -58,7 +58,13 @@ and Emoji can be installed by
 pip3 install emoji --upgrade
 ```
 
-2. Run the script with
+2. Edit the Python script so that it loads your parsed conversation by replacing the path below to the path of your conversation
+```
+data = json.load(open('/Path/To/Your/Conversation.json'))
+```
+You can also change the names declared in the script to your liking.
+
+3. Run the script with
 ```
 python3 facebook_chat_statistics.py
 ```

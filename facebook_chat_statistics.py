@@ -10,10 +10,10 @@ import emoji
 
 #### Facebook Chat Statistics ####
 
-# Load json data of the wanted conversation
-data = json.load(open('conversation.json'))
+# Load JSON data. Edit the path below to the path of your parsed conversation.
+data = json.load(open('/Path/To/Your/Conversation.json'))
 
-# Names
+# Names. Change these to your liking.
 you = 'You'
 partner = 'Partner'
 
