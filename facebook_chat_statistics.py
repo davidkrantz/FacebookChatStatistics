@@ -17,16 +17,21 @@ data = json.load(open('/Path/To/Your/Conversation.json'))
 you = 'You'
 partner = 'Partner'
 
+# Convert unicode characters into what Python expects them to look like
+for message in data['messages']:
+	message['sender_name'] = message['sender_name'].encode('raw_unicode_escape').decode('utf-8')
+	if 'content' in message:
+		message['content'] = message['content'].encode('raw_unicode_escape').decode('utf-8')
+
+# Sort the messages by time
+data['messages'] = sorted(data['messages'], key=lambda message: message['timestamp'])
+
 # Start time
-start_time = data['threads'][0]['messages'][0]['date']
-start_time = start_time[:16]
-start_time = datetime.strptime(start_time, "%Y-%m-%dT%H:%M")
+start_time = datetime.fromtimestamp(data['messages'][0]['timestamp'])
 print("Start time: " + str(start_time))
 
 # End time
-end_time = data['threads'][0]['messages'][len(data['threads'][0]['messages']) - 1]['date']
-end_time = end_time[:16]
-end_time = datetime.strptime(end_time, "%Y-%m-%dT%H:%M")
+end_time = datetime.fromtimestamp(data['messages'][-1]['timestamp'])
 print("End time: " + str(end_time))
 
 #### Totals ####
@@ -36,13 +41,14 @@ nbr_days = (end_time - start_time).days
 print("Number of days: " + str(nbr_days))
 
 # Number of messages
-nbr_msg = len(data['threads'][0]['messages'])
+nbr_msg = len(data['messages'])
 print("Number of messages: " + str(nbr_msg))
 
 # Total number of words
 nbr_words = 0
-for i in range(0, len(data['threads'][0]['messages'])):
-	nbr_words = nbr_words + len(data['threads'][0]['messages'][i]['message'].split())
+for message in data['messages']:
+	if 'content' in message:
+		nbr_words += len(message['content'].split())
 print("Number of words: " + str(nbr_words))
 
 #### Averages ####
@@ -58,11 +64,11 @@ print("Average messages per day: " + str(avg_msg_per_day))
 # Plot of who texts the most
 nbr_you = 0
 nbr_partner = 0
-for i in range(0, len(data['threads'][0]['messages'])):
-	if data['threads'][0]['messages'][i]['sender'] == you:
-		nbr_you = nbr_you + 1
+for message in data['messages']:
+	if message['sender_name'] == you:
+		nbr_you += 1
 	else:
-		nbr_partner = nbr_partner + 1
+		nbr_partner += 1
 procentage_you = 100 * round(nbr_you / nbr_msg, 2)
 procentage_partner = 100 * round(nbr_partner / nbr_msg, 2)
 fracs = [procentage_you, procentage_partner];
@@ -86,10 +92,8 @@ current_day = start_time.date()
 index = 0
 timeline[index] = current_day
 nbr_times_day[index] = 1
-for i in range(0, len(data['threads'][0]['messages'])):
-	current = data['threads'][0]['messages'][i]['date']
-	current = current[:16]
-	current = datetime.strptime(current, "%Y-%m-%dT%H:%M")
+for message in data['messages']:
+	current = datetime.fromtimestamp(message['timestamp'])
 	h = current.hour + current.minute / 60. + current.second / 3600
 	h = int(round(h))
 	if h == 24:
@@ -170,18 +174,19 @@ emojis_list = {}
 iter = iter(emoji.UNICODE_EMOJI.values())
 for k in iter:
 	emojis_list[k] = 0
-for i in range(0, len(data['threads'][0]['messages'])):
-	msg = data['threads'][0]['messages'][i]['message']
-	sender = data['threads'][0]['messages'][i]['sender']
-	for c in msg:
-		emoji_str = emoji.demojize(c)
-		if emoji_str == ':red_heart:':
-			if sender == you:
-				nbr_hearts_you = nbr_hearts_you + 1
-			else:
-				nbr_hearts_partner = nbr_hearts_partner + 1
-		if emoji_str in emojis_list:
-			emojis_list[emoji_str] = emojis_list[emoji_str] + 1
+for message in data['messages']:
+	if 'content' in message:
+		msg = message['content']
+		sender = message['sender_name']
+		for c in msg:
+			emoji_str = emoji.demojize(c)
+			if emoji_str == ':red_heart:':
+				if sender == you:
+					nbr_hearts_you = nbr_hearts_you + 1
+				else:
+					nbr_hearts_partner = nbr_hearts_partner + 1
+			if emoji_str in emojis_list:
+				emojis_list[emoji_str] = emojis_list[emoji_str] + 1
 print("Number of " + emoji.emojize(':red_heart:') + " " + you + ": " + str(nbr_hearts_you))
 print("Number of " + emoji.emojize(':red_heart:') + " " + partner + ": " + str(nbr_hearts_partner))
 top_emojies = []
