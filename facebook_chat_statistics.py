@@ -1,6 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.dates as dt
-from matplotlib.dates import DateFormatter
 import numpy as np
 import json
 from datetime import datetime, timedelta
@@ -23,15 +21,15 @@ for message in data['messages']:
 	if 'content' in message:
 		message['content'] = message['content'].encode('raw_unicode_escape').decode('utf-8')
 
-# Sort the messages by time
-data['messages'] = sorted(data['messages'], key=lambda message: message['timestamp'])
 
 # Start time
-start_time = datetime.fromtimestamp(data['messages'][0]['timestamp'])
+start_message = min(data['messages'],  key=lambda message: message['timestamp'])
+start_time = datetime.fromtimestamp(start_message['timestamp'])
 print("Start time: " + str(start_time))
 
 # End time
-end_time = datetime.fromtimestamp(data['messages'][-1]['timestamp'])
+end_message = max(data['messages'],  key=lambda message: message['timestamp'])
+end_time = datetime.fromtimestamp(end_message['timestamp'])
 print("End time: " + str(end_time))
 
 #### Totals ####
@@ -104,12 +102,12 @@ for message in data['messages']:
 	current = current.date()
 	if current == current_day:
 		nbr_times_day[index] = nbr_times_day[index] + 1
-	elif current > current_day:
+	else:
 		diff = (current - current_day).days
 		index = index + diff
 		current_day = current
 		timeline[index] = current_day
-		nbr_times_day[index] = 1
+		nbr_times_day[index] += 1
 dates = [None] * len(timeline)
 for i in range(0, len(timeline)):
 	if timeline[i] == None:
