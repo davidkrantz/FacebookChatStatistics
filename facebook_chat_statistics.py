@@ -23,6 +23,9 @@ for message in data['messages']:
 	if 'content' in message:
 		message['content'] = message['content'].encode('raw_unicode_escape').decode('utf-8')
 
+# If the archive isn't sorted by time, you may get errors. Uncomment this line to fix them.
+# data['messages'] = sorted(data['messages'], key=lambda message: message['timestamp'])
+
 # Start time
 start_time = datetime.fromtimestamp(data['messages'][-1]['timestamp'])
 print("Start time: " + str(start_time))
