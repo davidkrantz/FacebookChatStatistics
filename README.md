@@ -38,20 +38,8 @@ git clone https://github.com/davidkrantz/FacebookChatStatistics.git
 ```
 in your terminal.
 
-### Convert your conversation to a .json file
-1. Download your Facebook data by following [these](https://www.facebook.com/help/212802592074644?helpref=uf_permalink) instructions.
-
-2. Install [Facebook Chat Archive Parser](https://github.com/ownaginatious/fbchat-archive-parser) with
-```
-pip3 install fbchat-archive-parser
-```
-
-3. Using your terminal, locate to the downloaded Facebook data folder. With the Facebook Chat Archive Parser you can choose to only parse one specific conversation using the following command
-```
-fbcap ./messages.htm -t FirstNameOrLastName -f json
-``` 
-
-Click [here](https://github.com/ownaginatious/fbchat-archive-parser) for more information on how to use the Facebook Chat Archive Parser.
+### Download your Facebook conversations to a .json file
+Download your Facebook data by following [these](https://www.facebook.com/help/212802592074644?helpref=uf_permalink) instructions and chosing the format to be JSON. Note that you only have to download your messages in order for this program to work.
 
 ### Run it
 1. First you will have to install the needed packages. The script uses Matplotlib to plot and the package Emoji to easily switch between emojis and strings. Matplotlib can be installed by typing

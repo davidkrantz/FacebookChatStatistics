@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib.dates as dt
 from matplotlib.dates import DateFormatter
 import numpy as np
 import json
