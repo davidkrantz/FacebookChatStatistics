@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import matplotlib.dates as dt
+from matplotlib.dates import DateFormatter
 import numpy as np
 import json
 from datetime import datetime, timedelta
@@ -21,15 +23,12 @@ for message in data['messages']:
 	if 'content' in message:
 		message['content'] = message['content'].encode('raw_unicode_escape').decode('utf-8')
 
-
 # Start time
-start_message = min(data['messages'],  key=lambda message: message['timestamp'])
-start_time = datetime.fromtimestamp(start_message['timestamp'])
+start_time = datetime.fromtimestamp(data['messages'][-1]['timestamp'])
 print("Start time: " + str(start_time))
 
 # End time
-end_message = max(data['messages'],  key=lambda message: message['timestamp'])
-end_time = datetime.fromtimestamp(end_message['timestamp'])
+end_time = datetime.fromtimestamp(data['messages'][0]['timestamp'])
 print("End time: " + str(end_time))
 
 #### Totals ####
@@ -86,8 +85,8 @@ weekday_arr = [0, 1, 2, 3, 4, 5, 6]
 nbr_times_hour = [0] * 24
 nbr_times_weekday = [0] * 7
 nbr_times_day = [0] * (nbr_days + 2)
-current_day = start_time.date()
-index = 0
+current_day = end_time.date()
+index = len(timeline) - 1
 timeline[index] = current_day
 nbr_times_day[index] = 1
 for message in data['messages']:
@@ -102,12 +101,12 @@ for message in data['messages']:
 	current = current.date()
 	if current == current_day:
 		nbr_times_day[index] = nbr_times_day[index] + 1
-	else:
-		diff = (current - current_day).days
-		index = index + diff
+	elif current < current_day:
+		diff = (current_day - current).days
+		index = index - diff
 		current_day = current
 		timeline[index] = current_day
-		nbr_times_day[index] += 1
+		nbr_times_day[index] = 1
 dates = [None] * len(timeline)
 for i in range(0, len(timeline)):
 	if timeline[i] == None:
@@ -122,7 +121,7 @@ ax.xaxis.set_major_formatter(fmt)
 ax.xaxis.set_major_locator(loc)
 plt.bar(timeline, nbr_times_day, align="center", width=8, color='xkcd:crimson')
 plt.title("Timeline")
-ax = plt.axes()        
+ax = plt.axes()
 ax.yaxis.grid(linestyle='--')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -136,7 +135,7 @@ plt.show()
 # Plot by hour
 plt.bar(hour, nbr_times_hour, align="center", width=0.8, color='xkcd:crimson')
 plt.title("Activity by Day")
-ax = plt.axes()        
+ax = plt.axes()
 ax.yaxis.grid(linestyle='--')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -151,7 +150,7 @@ weekday_labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satur
 plt.bar(weekday_arr, nbr_times_weekday, align="center", width=0.8, color='xkcd:crimson')
 plt.xticks(weekday_arr, weekday_labels)
 plt.title("Activity by Week")
-ax = plt.axes()        
+ax = plt.axes()
 ax.yaxis.grid(linestyle='--')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
@@ -198,7 +197,7 @@ x = np.arange(len(top_emojies))
 plt.bar(x, emoji_count, align="center", width=0.8, color='xkcd:crimson')
 plt.xticks(x, top_emojies)
 plt.title("Top 10 Emojis")
-ax = plt.axes()        
+ax = plt.axes()
 ax.yaxis.grid(linestyle='--')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
