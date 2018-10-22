@@ -1,6 +1,6 @@
 # Facebook Chat Statistics
 
-A small program written in Python that lets you see statistics of any given Facebook Messenger conversation. I used this as a Valentines day surprise for my girlfriend and it is therefore focused on only conversations between two persons, but can be modified and used for any other purpose. This project was inspired by [this](https://www.reddit.com/r/dataisbeautiful/comments/7xicua/my_girlfriend_made_a_visualization_of_all/) Reddit post.
+A small program written in Python 3 that lets you see statistics of any given Facebook Messenger conversation. I used this as a Valentines day surprise for my girlfriend and it is therefore focused on only conversations between two persons, but can be modified and used for any other purpose. This project was inspired by [this](https://www.reddit.com/r/dataisbeautiful/comments/7xicua/my_girlfriend_made_a_visualization_of_all/) Reddit post.
 
 ## Features
 
@@ -13,6 +13,7 @@ The program fetches data such as:
 * Number of words
 * Average length of messages
 * Average messages per day
+* Number of :heart:s written by each conversation participant
 
 It also plots using Matplotlib the following diagrams (see pictures below)
 
@@ -42,7 +43,7 @@ in your terminal.
 Download your Facebook data by following [these](https://www.facebook.com/help/212802592074644?helpref=uf_permalink) instructions and chosing the format to be JSON. Note that you only have to download your messages in order for this program to work.
 
 ### Run it
-1. First you will have to install the needed packages. The script uses Matplotlib to plot and the package Emoji to easily switch between emojis and strings. Matplotlib can be installed by typing
+1. First you will have to install the needed packages. The script uses [Matplotlib](https://matplotlib.org/faq/installing_faq.html) to plot and the package [Emoji](https://github.com/carpedm20/emoji) to easily switch between emojis and strings. Matplotlib can be installed by for example typing
 
 ```
 pip3 install matplotlib
@@ -52,15 +53,9 @@ and Emoji can be installed by
 pip3 install emoji --upgrade
 ```
 
-2. Edit the Python script so that it loads your parsed conversation by replacing the path below to the path of your conversation
+2. Run the script as below with the path to your parsed conversation as an argument, for example
 ```
-data = json.load(open('/Path/To/Your/Conversation.json'))
-```
-You can also change the names declared in the script to your liking.
-
-3. Run the script with
-```
-python3 facebook_chat_statistics.py
+python3 facebook_chat_statistics.py /Path/To/Conversation.json
 ```
 
 Enjoy!
