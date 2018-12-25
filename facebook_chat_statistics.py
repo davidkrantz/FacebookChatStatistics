@@ -1,215 +1,182 @@
 import sys
+import numpy as np
+from datetime import datetime
 import matplotlib.pyplot as plt
 from matplotlib.dates import DateFormatter
-import numpy as np
-import json
-from datetime import datetime, timedelta
 import matplotlib.dates as mdates
-import emoji
+from matplotlib.backends.backend_pdf import PdfPages
+import warnings
+from facebook_messenger_conversation import FacebookMessengerConversation
 
-
-#### Facebook Chat Statistics ####
+warnings.filterwarnings('ignore', module='matplotlib')
 
 
 def main():
+    """
+    Fetches and prints statistics of a Facebook Messenger
+    conversation. Also generates a PDF with plots of
+    some of these statistics.
+    """
     if len(sys.argv) == 2:
          path_to_conversation = str(sys.argv[1])
     else:
-        print('Usage: python3 {} /Path/To/Conversation.json'.format(sys.argv[0]))
+        print('Usage: python3 {} /Path/To/Conversation.json'
+        .format(sys.argv[0]))
         sys.exit()
 
-    # Load JSON data
-    data = json.load(open(path_to_conversation))
+    fb = FacebookMessengerConversation(path_to_conversation)
+    nbr_of_top_emojis = 10
 
-    # Set names of conversation participants
-    you = data['participants'][1]['name']
-    partner = data['participants'][0]['name']
+    participants = fb.get_participants()
 
-    # Convert unicode characters into what Python expects them to look like
-    for message in data['messages']:
-        message['sender_name'] = message['sender_name'].encode('raw_unicode_escape').decode('utf-8')
-        if 'content' in message:
-            message['content'] = message['content'].encode('raw_unicode_escape').decode('utf-8')
+    print(banner('Times'))
+    start, end = fb.get_time_interval('str')
+    print('Start: {}\nEnd: {}'.format(start, end))
 
-    # Start time
-    start_time = datetime.fromtimestamp(data['messages'][-1]['timestamp_ms']/1000)
-    print('Start time: {}'.format(start_time))
-
-    # End time
-    end_time = datetime.fromtimestamp(data['messages'][0]['timestamp_ms']/1000)
-    print('End time: {}'.format(end_time))
-
-    #### Totals ####
-
-    # Number of days
-    nbr_days = (end_time - start_time).days
+    print(banner('Totals'))
+    activity = fb.activity()
+    for act_p in activity:
+        print('Number of messages {}: {} ({} %)'.format(act_p,
+                                                        activity[act_p][0],
+                                                        activity[act_p][1]))
+    nbr_days = fb.get_nbr_days()
     print('Number of days: {}'.format(nbr_days))
+    print('Number of messages: {}'.format(fb.get_nbr_msg()))
+    print('Number of words: {}'.format(fb.get_nbr_words()))
 
-    # Number of messages
-    nbr_msg = len(data['messages'])
-    print('Number of messages: {}'.format(nbr_msg))
+    print(banner('Averages'))
+    print('Average length of messages: {} words'.format(fb.get_avg_len_msg()))
+    print('Average messages per day: {}'.format(fb.get_avg_msg_day()))
 
-    # Total number of words
-    nbr_words = 0
-    for message in data['messages']:
-        if 'content' in message:
-            nbr_words += len(message['content'].split())
-    print('Number of words: {}'.format(nbr_words))
+    print(banner('Plots'))
+    names = ''
+    for p in participants:
+        name = p.split(' ')
+        names += '{}_{}_'.format(name[0], name[1])
+    names = names[:-1]
+    filename = '{}_{}_{}.pdf'.format(names, start[0:10].replace('-', ''),
+                                     end[0:10].replace('-',''))
 
-    #### Averages ####
+    # Generate PDF
+    with PdfPages(filename) as pdf:
+        # Plot percentage
+        fracs = [activity[act_p][0] for act_p in activity]
+        plt.pie(fracs, startangle=90, autopct='%1.1f%%')
+        plt.legend(participants,
+                   loc='upper left',
+                   bbox_to_anchor=(-0.15, 1.15))
+        plt.axis('equal')
+        plt.title('Who texts the most?')
+        pdf.savefig()
+        plt.close()
 
-    # Length of a message
-    avg_len_msg = round(nbr_words / nbr_msg, 1)
-    print('Average length of messages: {} words'.format(avg_len_msg))
+        # Plot timeline
+        timeline, nbr_times_day, nbr_times_weekday, nbr_times_hour = fb.timeline()
+        months = nbr_days/30
+        interval = int(round(months/12))
+        fmt = mdates.DateFormatter('%Y-%m-%d')
+        loc = mdates.MonthLocator(interval=interval)
+        ax = plt.axes()
+        ax.xaxis.set_major_formatter(fmt)
+        plt.bar(timeline, nbr_times_day, align='center', width=8)
+        plt.title('Timeline')
+        plt.ylabel('Number of messages')
+        ax.yaxis.grid(linestyle='--')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_linewidth(0.5)
+        ax.spines['left'].set_linewidth(0.5)
+        fig = plt.figure(1)
+        fig.autofmt_xdate()
+        plt.tight_layout()
+        pdf.savefig()
+        plt.close()
 
-    # Messages per day
-    avg_msg_per_day = round(nbr_msg / nbr_days, 1)
-    print('Average messages per day: {}'.format(avg_msg_per_day))
+        # Plot by hour
+        hour = list(range(24))
+        plt.bar(hour, nbr_times_hour, align='center', width=0.8)
+        plt.title('Activity by Day')
+        plt.xlabel('Hour of the day')
+        plt.ylabel('Number of messages')
+        ax = plt.axes()
+        ax.yaxis.grid(linestyle='--')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_linewidth(0.5)
+        ax.spines['left'].set_linewidth(0.5)
+        fig = plt.figure(1)
+        plt.tight_layout()
+        pdf.savefig()
+        plt.close()
 
-    # Plot of who texts the most
-    nbr_you = 0
-    nbr_partner = 0
-    for message in data['messages']:
-        if message['sender_name'] == you:
-            nbr_you += 1
-        else:
-            nbr_partner += 1
-    procentage_you = 100 * round(nbr_you / nbr_msg, 2)
-    procentage_partner = 100 * round(nbr_partner / nbr_msg, 2)
-    fracs = [procentage_you, procentage_partner];
-    labels = [you, partner]
-    colors = ['xkcd:crimson', '#F08080']
-    pie = plt.pie(fracs, colors=colors, labels=labels, startangle=90, autopct='%1.1f%%')
-    plt.axis('equal')
-    plt.title("Who texts the most?")
-    plt.show()
-    print('Number of messages {}: {} ({} %)'.format(you, nbr_you, procentage_you))
-    print('Number of messages {}: {} ({} %)'.format(partner, nbr_partner, procentage_partner))
+        # Plot by weekday
+        weekday_labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+                          'Friday', 'Saturday', 'Sunday']
+        weekday_arr = np.arange(len(weekday_labels))
+        plt.bar(weekday_arr, nbr_times_weekday, align='center', width=0.8)
+        plt.xticks(weekday_arr, weekday_labels, rotation=30)
+        plt.title('Activity by Week')
+        plt.ylabel('Number of messages')
+        ax = plt.axes()
+        ax.yaxis.grid(linestyle='--')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_linewidth(0.5)
+        ax.spines['left'].set_linewidth(0.5)
+        fig = plt.figure(1)
+        plt.tight_layout()
+        pdf.savefig()
+        plt.close()
 
-    # Fetch timeline data
-    timeline = [None] * (nbr_days + 2)
-    hour = list(range(24))
-    weekday_arr = [0, 1, 2, 3, 4, 5, 6]
-    nbr_times_hour = [0] * 24
-    nbr_times_weekday = [0] * 7
-    nbr_times_day = [0] * (nbr_days + 2)
-    current_day = end_time.date()
-    index = len(timeline) - 1
-    timeline[index] = current_day
-    nbr_times_day[index] = 1
-    for message in data['messages']:
-        current = datetime.fromtimestamp(message['timestamp_ms']/1000)
-        h = current.hour + current.minute / 60. + current.second / 3600
-        h = int(round(h))
-        if h == 24:
-            h = 0
-        nbr_times_hour[h] = nbr_times_hour[h] + 1
-        wd = current.weekday()
-        nbr_times_weekday[wd] = nbr_times_weekday[wd] + 1
-        current = current.date()
-        if current == current_day:
-            nbr_times_day[index] = nbr_times_day[index] + 1
-        elif current < current_day:
-            diff = (current_day - current).days
-            index = index - diff
-            current_day = current
-            timeline[index] = current_day
-            nbr_times_day[index] = 1
-    dates = [None] * len(timeline)
-    for i in range(0, len(timeline)):
-        if timeline[i] == None:
-            timeline[i] = timeline[i - 1] + timedelta(days=1)
-        dates[i] = timeline[i].strftime("%Y-%m-%d")
+        # Plot top emojies
+        top_emojis, emoji_count_p = fb.top_emojis(nbr_of_top_emojis)
+        x = np.arange(len(top_emojis))
+        for p in participants:
+            plt.bar(x, emoji_count_p[p], align='center', width=0.8)
+        plt.xticks(x, top_emojis)
+        plt.title('Top 10 emojis')
+        plt.ylabel('Number of times used')
+        plt.legend(participants)
+        ax = plt.axes()
+        ax.yaxis.grid(linestyle='--')
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['bottom'].set_linewidth(0.5)
+        ax.spines['left'].set_linewidth(0.5)
+        fig = plt.figure(1)
+        plt.tight_layout()
+        pdf.savefig()
+        plt.close()
 
-    # Plot timeline
-    fmt = mdates.DateFormatter('%Y-%m-%d')
-    loc = mdates.MonthLocator(interval=6)
-    ax = plt.axes()
-    ax.xaxis.set_major_formatter(fmt)
-    ax.xaxis.set_major_locator(loc)
-    plt.bar(timeline, nbr_times_day, align="center", width=8, color='xkcd:crimson')
-    plt.title('Timeline')
-    ax.yaxis.grid(linestyle='--')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(0.5)
-    ax.spines['left'].set_linewidth(0.5)
-    fig = plt.figure(1)
-    fig.autofmt_xdate()
-    plt.tight_layout()
-    plt.show()
+        # PDF info
+        d = pdf.infodict()
+        d['Title'] = filename.replace('_', ' ')
+        d['Author'] = 'Facebook Chat Statistics'
+        d['Subject'] = 'Conversation statistics between {}'.format(
+            names.replace('_', ' '))
+        d['CreationDate'] = datetime.today()
+        d['ModDate'] = datetime.today()
 
-    # Plot by hour
-    plt.bar(hour, nbr_times_hour, align='center', width=0.8, color='xkcd:crimson')
-    plt.title('Activity by Day')
-    ax.yaxis.grid(linestyle='--')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(0.5)
-    ax.spines['left'].set_linewidth(0.5)
-    fig = plt.figure(1)
-    plt.tight_layout()
-    plt.show()
+    print('Most messages in one day: {}'.format(max(nbr_times_day)))
+    print('Top 10 emojis: {}'.format(top_emojis))
+    print('PDF generated successfully!')
 
-    # Plot by weekday
-    weekday_labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-    plt.bar(weekday_arr, nbr_times_weekday, align='center', width=0.8, color='xkcd:crimson')
-    plt.xticks(weekday_arr, weekday_labels)
-    plt.title('Activity by Week')
-    ax.yaxis.grid(linestyle='--')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(0.5)
-    ax.spines['left'].set_linewidth(0.5)
-    fig = plt.figure(1)
-    plt.tight_layout()
-    plt.show()
 
-    # Most messages in one day
-    most_msg = max(nbr_times_day)
-    print('Most messages in one day: {}'.format(most_msg))
+def banner(msg, ch='=', length=80):
+    """Creates a banner with the message `msg`.
 
-    # Number of red hearts sent by each person and the most used emojies
-    nbr_hearts_you = 0
-    nbr_hearts_partner = 0
-    emojis_list = {}
-    itr = iter(emoji.UNICODE_EMOJI.values())
-    for k in itr:
-        emojis_list[k] = 0
-    for message in data['messages']:
-        if 'content' in message and len(message) == 4:
-            msg = message['content']
-            sender = message['sender_name']
-            for c in msg:
-                emoji_str = emoji.demojize(c)
-                if emoji_str == ':red_heart:':
-                    if sender == you:
-                        nbr_hearts_you += 1
-                    else:
-                        nbr_hearts_partner += 1
-                if emoji_str in emojis_list:
-                    emojis_list[emoji_str] += 1
-    print('Number of {} {}: {}'.format(emoji.emojize(':red_heart:'), you, nbr_hearts_you))
-    print('Number of {} {}: {}'.format(emoji.emojize(':red_heart:'), partner, nbr_hearts_partner))
-    top_emojies = []
-    emoji_count = []
-    for emoji_key, count in sorted(emojis_list.items(), key=lambda kv: (-kv[1], kv[0]))[:10]:
-        top_emojies.append(emoji.emojize(emoji_key))
-        emoji_count.append(count)
+    Args:
+        msg (str): Message of banner.
+        ch (str): Banner character.
+        length (int): Length of banner.
 
-    # Plot top 10 emojies
-    x = np.arange(len(top_emojies))
-    plt.bar(x, emoji_count, align="center", width=0.8, color='xkcd:crimson')
-    plt.xticks(x, top_emojies)
-    plt.title('Top 10 emojis')
-    ax.yaxis.grid(linestyle='--')
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_linewidth(0.5)
-    ax.spines['left'].set_linewidth(0.5)
-    fig = plt.figure(1)
-    plt.tight_layout()
-    plt.show()
+    Returns:
+        str: Banner with message.
+
+    """
+    spaced_text = ' {} '.format(msg)
+    banner = spaced_text.center(length, ch)
+    return banner
 
 
 if __name__ == '__main__':
