@@ -131,8 +131,12 @@ def main():
         # Plot top emojies
         top_emojis, emoji_count_p = fb.top_emojis(nbr_of_top_emojis)
         x = np.arange(len(top_emojis))
-        for p in participants:
-            plt.bar(x, emoji_count_p[p], align='center', width=0.8)
+        plt.bar(x, emoji_count_p[participants[0]], align='center', width=0.8)
+        emoji_sum = emoji_count_p[participants[0]]
+        for i in range(1, len(participants)):
+            plt.bar(x, emoji_count_p[participants[i]],
+                    align='center', width=0.8, bottom=emoji_sum)
+            emoji_sum = [x + y for x, y in zip(emoji_sum, emoji_count_p[participants[i]])]
         plt.xticks(x, top_emojis)
         plt.title('Top 10 emojis')
         plt.ylabel('Number of times used')
