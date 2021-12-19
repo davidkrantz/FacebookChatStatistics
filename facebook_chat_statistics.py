@@ -49,13 +49,24 @@ def main():
     print('Average messages per day: {}'.format(fb.get_avg_msg_day()))
 
     print(banner('Plots'))
+
+    # Set appropriate filename
     names = ''
     for p in participants:
         name = p.split(' ')
         names += '{}_{}_'.format(name[0], name[1])
     names = names[:-1]
-    filename = '{}_{}_{}.pdf'.format(names, start[0:10].replace('-', ''),
+    filename = '{}_{}_{}.pdf'.format(names,
+                                     start[0:10].replace('-', ''),
                                      end[0:10].replace('-',''))
+    if len(filename) > 255:
+        filename = '{}_{}_{}.pdf'.format(fb.title.replace(' ','_'),
+                                         start[0:10].replace('-', ''),
+                                         end[0:10].replace('-',''))
+        if len(filename) > 255:
+            filename = '{}_{}_{}.pdf'.format('facebook_chat_statistics',
+                                             start[0:10].replace('-', ''),
+                                             end[0:10].replace('-',''))
 
     # Generate PDF
     with PdfPages(filename) as pdf:
@@ -78,7 +89,7 @@ def main():
         loc = mdates.MonthLocator(interval=interval)
         ax = plt.axes()
         ax.xaxis.set_major_formatter(fmt)
-        plt.bar(timeline, nbr_times_day, align='center', width=8)
+        plt.bar(timeline, nbr_times_day, align='center')
         plt.title('Timeline')
         plt.ylabel('Number of messages')
         ax.yaxis.grid(linestyle='--')

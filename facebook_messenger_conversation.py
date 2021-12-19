@@ -14,6 +14,7 @@ class FacebookMessengerConversation():
 
     Attributes:
         data (dict): The conversation of interest.
+        title (str) : Title of the conversation.
         p (list): List of conversation participants.
 
     """
@@ -28,6 +29,7 @@ class FacebookMessengerConversation():
 
         """
         self.data = json.load(open(conversation))
+        self.title = self.data['title']
 
         # Convert unicode characters
         for p in self.data['participants']:
@@ -89,7 +91,7 @@ class FacebookMessengerConversation():
 
         """
         start, end = self.get_time_interval('datetime')
-        return (end - start).days
+        return (end - start).days + 1
 
     def get_nbr_msg(self):
         """Returns the total number of messages.
@@ -161,12 +163,12 @@ class FacebookMessengerConversation():
 
         """
         nbr_days = self.get_nbr_days()
-        timeline = [None] * (nbr_days + 2)
+        timeline = [None] * nbr_days
         hour = list(range(24))
         weekday_arr = [0, 1, 2, 3, 4, 5, 6]
         nbr_times_hour = [0] * 24
         nbr_times_weekday = [0] * 7
-        nbr_times_day = [0] * (nbr_days + 2)
+        nbr_times_day = [0] * nbr_days
         _, end = self.get_time_interval('datetime')
         current_day = end.date()
         index = len(timeline) - 1
@@ -219,7 +221,7 @@ class FacebookMessengerConversation():
                 sender = message['sender_name']
                 for c in msg:
                     emoji_str = emoji.demojize(c)
-                    if emoji_str in emojis:
+                    if emoji_str in emojis and sender in emojis_p:
                         emojis_p[sender][emoji_str] += 1
                         emojis[emoji_str] += 1
         top_emojis = [emoji_key for emoji_key, count in sorted(emojis.items(),
