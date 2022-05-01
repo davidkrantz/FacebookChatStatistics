@@ -78,11 +78,14 @@ def main():
                    bbox_to_anchor=(-0.15, 1.15))
         plt.axis('equal')
         plt.title('Who texts the most?')
+        plt.tight_layout()
         pdf.savefig()
         plt.close()
 
-        # Plot timeline
+        #set up variables
         timeline, nbr_times_day, nbr_times_weekday, nbr_times_hour = fb.timeline()
+        
+        # Plot timeline
         months = nbr_days/30
         interval = int(round(months/12))
         fmt = mdates.DateFormatter('%Y-%m-%d')
@@ -105,12 +108,12 @@ def main():
 
         # Plot by hour
         hour = list(range(24))
+        ax = plt.axes()
+        ax.yaxis.grid(linestyle='--')
         plt.bar(hour, nbr_times_hour, align='center', width=0.8)
         plt.title('Activity by Day')
         plt.xlabel('Hour of the day')
         plt.ylabel('Number of messages')
-        ax = plt.axes()
-        ax.yaxis.grid(linestyle='--')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['bottom'].set_linewidth(0.5)
@@ -124,12 +127,12 @@ def main():
         weekday_labels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
                           'Friday', 'Saturday', 'Sunday']
         weekday_arr = np.arange(len(weekday_labels))
+        ax = plt.axes()
+        ax.yaxis.grid(linestyle='--')
         plt.bar(weekday_arr, nbr_times_weekday, align='center', width=0.8)
         plt.xticks(weekday_arr, weekday_labels, rotation=30)
         plt.title('Activity by Week')
         plt.ylabel('Number of messages')
-        ax = plt.axes()
-        ax.yaxis.grid(linestyle='--')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['bottom'].set_linewidth(0.5)
@@ -142,6 +145,8 @@ def main():
         # Plot top emojies
         top_emojis, emoji_count_p = fb.top_emojis(nbr_of_top_emojis)
         x = np.arange(len(top_emojis))
+        ax = plt.axes()
+        ax.yaxis.grid(linestyle='--')
         plt.bar(x, emoji_count_p[participants[0]], align='center', width=0.8)
         emoji_sum = emoji_count_p[participants[0]]
         for i in range(1, len(participants)):
@@ -152,8 +157,6 @@ def main():
         plt.title('Top 10 emojis')
         plt.ylabel('Number of times used')
         plt.legend(participants)
-        ax = plt.axes()
-        ax.yaxis.grid(linestyle='--')
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         ax.spines['bottom'].set_linewidth(0.5)
